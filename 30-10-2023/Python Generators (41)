@@ -1,0 +1,29 @@
+def fib():
+  a,b = 0,1
+  while True:
+    c = a+b
+    yield a 
+    a,b = b,c
+
+y = fib()
+print(next(y))
+print(next(y))
+print(next(y))
+print(next(y))
+print(next(y))
+print(next(y))
+print(next(y))
+print(next(y))
+print(next(y))
+
+## the out put is 
+  #>>> 
+0
+1
+1
+2
+3
+5
+8
+13
+21
