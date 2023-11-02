@@ -1,4 +1,4 @@
-class myit
+class myit:
   def __init__(self):
     self.y = 2
   
