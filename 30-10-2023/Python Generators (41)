@@ -27,3 +27,6 @@ print(next(y))
 8
 13
 21
+
+## this is how to get fibonaci sequence with python generators 
+## try to do this with another way 
