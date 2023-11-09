@@ -66,7 +66,7 @@
 		
 #-----------
 		
-			# randint()
+		# randint()
 
 # import random
 # x = random.randint(2,10)
@@ -140,6 +140,13 @@
 # >>>
 # [4, 7, 9, 2, 1, 3, 5, 8, 6]
 # [9, 8, 2, 6, 1, 4, 3, 5, 7]
+
+			# random()
+			# uniform()
+			# randint()
+			# choice()
+			# choices()
+			# shuffle()
 
 
 
