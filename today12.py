@@ -110,6 +110,14 @@ txt = 'Python is a great final language'
 # Python@is@a great final language
 
 
+# y = re.sub('f\w{4}','first',txt,2)
+# print(y)
+
+# >>>
+# Python is a great first language
+
+
+
 
 
 
