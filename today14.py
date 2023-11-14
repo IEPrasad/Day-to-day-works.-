@@ -1,6 +1,6 @@
 
-	Python Tutorial
-		Import own Modules and packages ( __init__.py )
+	|Python Tutorial 56|
+		|Import own Modules and packages ( __init__.py )|
 
 What is the module in Python 
 		** A Python module can be a simple python file
@@ -10,7 +10,7 @@ What is the module in Python
 What is the Python package 
 		** A Python package can be a collection of different Python modules 
 			with an __init__.py File
-
+----------------------
 
 We create a folder in desktop 
 Now it is open through vscode using cmd
