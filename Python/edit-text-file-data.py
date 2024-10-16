@@ -24,7 +24,7 @@ content = [line.replace("line to change", "new content") for line in content]
 
 # Write the modified content back to the file
 with open("newtextfile.txt", "w") as file:
-  file.writeline(content)
+  file.writelines(content)
 
 
 # 3. Remove data from the file
