@@ -27,4 +27,26 @@ with open("newtextfile.txt", "w") as file:
   file.writeline(content)
 
 
-  
+# 3. Remove data from the file
+
+# To remove data, follow a similar process: 
+    # Read the file contents
+    # Remove the desired lines or text
+    # Write the updated content back to the file
+
+# Remove specific line (example: remove lines containing "remove this")
+with open("newtextfile.txt", "r") as file:
+  content = file.readlines()
+
+# Filter out lines with "remove this"
+content = [line for line in content if "remove this" not in line]
+
+# Write the filtered content back to the file
+with open("newtextfile.txt", "w") as file:
+  file.writelines(content)
+
+
+# summary 
+# Append data: use mode "a" to add data without modifying existing data.
+# Edit data: read the file, modify in memory, and overwrite the file.
+# Remove data: read, filter out the unwanted content, and overwrite the file.
