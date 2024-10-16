@@ -5,7 +5,7 @@ with open("newtextfile.txt", "w") as file:
 
 # Open the file to read and display the contents 
 with open("newtextfile.txt", "r") as file:
-  content - file.read()
+  content = file.read()
   print("File content:\n", content)
 
 
