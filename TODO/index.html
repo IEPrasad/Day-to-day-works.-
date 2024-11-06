@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional TODO List</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.3.4/vue.global.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        body {
+            background: #f5f5f5;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+
+        .task-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 6px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        input, select {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-success {
+            background: #2ecc71;
+            color: white;
+        }
+
+        .btn-warning {
+            background: #f1c40f;
+            color: white;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .priority-high {
+            color: #e74c3c;
+        }
+
+        .priority-medium {
+            color: #f1c40f;
+        }
+
+        .priority-low {
+            color: #2ecc71;
+        }
+
+        .completed {
+            opacity: 0.6;
+            text-decoration: line-through;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <div class="header">
+                <h1>Professional TODO List</h1>
+            </div>
+
+            <form @submit.prevent="addTask" class="task-form">
+                <div class="form-group">
+                    <label>Task Name</label>
+                    <input type="text" v-model="newTask.name" required>
+                </div>
+                <div class="form-group">
+                    <label>Start Date</label>
+                    <input type="datetime-local" v-model="newTask.startDate" required>
+                </div>
+                <div class="form-group">
+                    <label>End Date</label>
+                    <input type="datetime-local" v-model="newTask.endDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Priority</label>
+                    <select v-model="newTask.priority" required>
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-primary">Add Task</button>
+            </form>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Task Name</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Priority</th>
+                        <th>Remaining Time</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="task in tasks" :key="task.id" :class="{ completed: task.completed }">
+                        <td>{{ task.name }}</td>
+                        <td>{{ formatDate(task.startDate) }}</td>
+                        <td>
+                            <input 
+                                v-if="task.editing" 
+                                type="datetime-local" 
+                                v-model="task.endDate"
+                                @blur="updateTask(task)"
+                            >
+                            <span v-else>{{ formatDate(task.endDate) }}</span>
+                        </td>
+                        <td :class="'priority-' + task.priority">
+                            {{ task.priority.charAt(0).toUpperCase() + task.priority.slice(1) }}
+                        </td>
+                        <td>{{ calculateRemainingTime(task) }}</td>
+                        <td class="actions">
+                            <button @click="toggleEdit(task)" class="btn-warning">
+                                {{ task.editing ? 'Save' : 'Edit' }}
+                            </button>
+                            <button @click="toggleComplete(task)" class="btn-success">
+                                {{ task.completed ? 'Undo' : 'Done' }}
+                            </button>
+                            <button @click="deleteTask(task)" class="btn-danger">Delete</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const { createApp, ref } = Vue;
+
+        createApp({
+            setup() {
+                const tasks = ref([]);
+                const newTask = ref({
+                    name: '',
+                    startDate: '',
+                    endDate: '',
+                    priority: 'medium'
+                });
+
+                const addTask = () => {
+                    if (new Date(newTask.value.endDate) < new Date(newTask.value.startDate)) {
+                        alert('End date cannot be before start date!');
+                        return;
+                    }
+
+                    tasks.value.push({
+                        id: Date.now(),
+                        ...newTask.value,
+                        completed: false,
+                        editing: false
+                    });
+
+                    newTask.value = {
+                        name: '',
+                        startDate: '',
+                        endDate: '',
+                        priority: 'medium'
+                    };
+                };
+
+                const deleteTask = (task) => {
+                    const index = tasks.value.indexOf(task);
+                    tasks.value.splice(index, 1);
+                };
+
+                const toggleComplete = (task) => {
+                    task.completed = !task.completed;
+                };
+
+                const toggleEdit = (task) => {
+                    task.editing = !task.editing;
+                };
+
+                const updateTask = (task) => {
+                    if (new Date(task.endDate) < new Date(task.startDate)) {
+                        alert('End date cannot be before start date!');
+                        task.endDate = task.originalEndDate;
+                        return;
+                    }
+                    task.editing = false;
+                };
+
+                const formatDate = (dateString) => {
+                    return new Date(dateString).toLocaleString();
+                };
+
+                const calculateRemainingTime = (task) => {
+                    if (task.completed) return 'Completed';
+                    
+                    const now = new Date();
+                    const end = new Date(task.endDate);
+                    const diff = end - now;
+
+                    if (diff < 0) return 'Overdue';
+
+                    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+                    return `${days}d ${hours}h ${minutes}m`;
+                };
+
+                return {
+                    tasks,
+                    newTask,
+                    addTask,
+                    deleteTask,
+                    toggleComplete,
+                    toggleEdit,
+                    updateTask,
+                    formatDate,
+                    calculateRemainingTime
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

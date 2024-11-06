@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional TODO List</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.3.4/vue.global.min.js"></script>
+    <style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+body {
+    background: #1a1a1a;
+    padding: 2rem;
+    color: #fff;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: #2d2d2d;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    border: 1px solid #ff69b4;
+}
+
+.header {
+    margin-bottom: 2rem;
+    border-bottom: 2px solid #ff69b4;
+    padding-bottom: 1rem;
+}
+
+h1 {
+    color: #ff69b4;
+    margin-bottom: 1rem;
+    text-shadow: 0 0 10px rgba(255,105,180,0.3);
+}
+
+/* Stats Panel */
+.stats-panel {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+    background: #363636;
+    padding: 1.5rem;
+    border-radius: 6px;
+    border: 1px solid #ff69b4;
+}
+
+.stat-card {
+    background: #2d2d2d;
+    padding: 1rem;
+    border-radius: 4px;
+    text-align: center;
+    border: 1px solid #ff69b4;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #ff69b4;
+    margin: 0.5rem 0;
+}
+
+.stat-label {
+    color: #fff;
+    font-size: 0.9rem;
+}
+
+.task-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr auto;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    background: #363636;
+    padding: 1.5rem;
+    border-radius: 6px;
+    border: 1px solid #ff69b4;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+label {
+    color: #ff69b4;
+    font-weight: 500;
+}
+
+input, select {
+    padding: 0.5rem;
+    border: 1px solid #ff69b4;
+    border-radius: 4px;
+    font-size: 1rem;
+    background: #2d2d2d;
+    color: #fff;
+}
+
+input:focus, select:focus {
+    outline: none;
+    box-shadow: 0 0 5px #ff69b4;
+}
+
+button {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+}
+
+button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.btn-primary {
+    background: #ff69b4;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #ff4da6;
+    border-color: #ff69b4;
+}
+
+.btn-danger {
+    background: #ff4444;
+    color: white;
+}
+
+.btn-success {
+    background: #00c851;
+    color: white;
+}
+
+.btn-warning {
+    background: #ffbb33;
+    color: #2d2d2d;
+}
+
+/* Progress Components */
+.progress-control {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.progress-container {
+    width: 100%;
+    background: #363636;
+    border-radius: 10px;
+    overflow: hidden;
+    height: 8px;
+    margin-top: 0.5rem;
+}
+
+.progress-bar {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.3s ease;
+}
+
+.progress-high {
+    background: linear-gradient(to right, #ff4444, #ff6b6b);
+}
+
+.progress-medium {
+    background: linear-gradient(to right, #ffbb33, #ffd166);
+}
+
+.progress-low {
+    background: linear-gradient(to right, #00c851, #00e676);
+}
+
+.progress-slider {
+    width: 100%;
+    height: 20px;
+    -webkit-appearance: none;
+    background: #363636;
+    outline: none;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+}
+
+.progress-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #ff69b4;
+    cursor: pointer;
+    border: 4px solid #2d2d2d;
+    box-shadow: -407px 0 0 400px #ff69b4;
+}
+
+.progress-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #ff69b4;
+    cursor: pointer;
+    border: 4px solid #2d2d2d;
+}
+
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-top: 1rem;
+}
+
+th, td {
+    padding: 1rem;
+    text-align: left;
+    border: 1px solid #ff69b4;
+}
+
+th {
+    background: #363636;
+    font-weight: 600;
+    color: #ff69b4;
+}
+
+td {
+    background: #2d2d2d;
+}
+
+.urgent-task td {
+    animation: urgentPulse 2s infinite;
+}
+
+@keyframes urgentPulse {
+    0% { background: #2d2d2d; }
+    50% { background: rgba(255, 68, 68, 0.1); }
+    100% { background: #2d2d2d; }
+}
+
+.actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.priority-high {
+    color: #ff4444;
+    font-weight: bold;
+}
+
+.priority-medium {
+    color: #ffbb33;
+    font-weight: bold;
+}
+
+.priority-low {
+    color: #00c851;
+    font-weight: bold;
+}
+
+.completed td {
+    opacity: 0.6;
+    text-decoration: line-through;
+    background: #232323;
+}
+
+.editable-input {
+    width: 100%;
+    background: #363636;
+    border: 1px solid #ff69b4;
+    color: white;
+    padding: 0.3rem;
+}
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <div class="header">
+                <h1>Professional TODO List</h1>
+            </div>
+
+            <!-- Stats Panel -->
+            <div class="stats-panel">
+                <div class="stat-card">
+                    <div class="stat-value">{{ totalTasks }}</div>
+                    <div class="stat-label">Total Tasks</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{ completionRate }}%</div>
+                    <div class="stat-label">Completion Rate</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{ urgentTasks }}</div>
+                    <div class="stat-label">Urgent Tasks</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{ completedTasks }}</div>
+                    <div class="stat-label">Completed Tasks</div>
+                </div>
+            </div>
+
+            <form @submit.prevent="addTask" class="task-form">
+                <div class="form-group">
+                    <label>Task Name</label>
+                    <input type="text" v-model="newTask.name" required>
+                </div>
+                <div class="form-group">
+                    <label>Start Date</label>
+                    <input type="datetime-local" v-model="newTask.startDate" required>
+                </div>
+                <div class="form-group">
+                    <label>End Date</label>
+                    <input type="datetime-local" v-model="newTask.endDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Priority</label>
+                    <select v-model="newTask.priority" required>
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-primary">Add Task</button>
+            </form>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Task Name</th>
+                        <th>Progress</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Priority</th>
+                        <th>Remaining Time</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="task in sortedTasks" 
+                        :key="task.id" 
+                        :class="{ 
+                            completed: task.completed,
+                            'urgent-task': isUrgent(task) && !task.completed 
+                        }">
+                        <td>
+                            <input 
+                                v-if="task.editing" 
+                                type="text" 
+                                v-model="task.name"
+                                class="editable-input"
+                                @blur="updateTask(task)"
+                            >
+                            <span v-else>{{ task.name }}</span>
+                        </td>
+                        <td>
+                            <div class="progress-container">
+                                <div 
+                                    :class="'progress-bar progress-' + task.priority"
+                                    :style="{ width: calculateProgress(task) + '%' }"
+                                ></div>
+                            </div>
+                            {{ calculateProgress(task) }}%
+                        </td>
+                        <td>{{ formatDate(task.startDate) }}</td>
+                        <td>
+                            <input 
+                                v-if="task.editing" 
+                                type="datetime-local" 
+                                v-model="task.endDate"
+                                class="editable-input"
+                                @blur="updateTask(task)"
+                            >
+                            <span v-else>{{ formatDate(task.endDate) }}</span>
+                        </td>
+                        <td :class="'priority-' + task.priority">
+                            {{ task.priority.charAt(0).toUpperCase() + task.priority.slice(1) }}
+                        </td>
+                        <td>{{ calculateRemainingTime(task) }}</td>
+                        <td class="actions">
+                            <button @click="toggleEdit(task)" class="btn-warning">
+                                {{ task.editing ? 'Save' : 'Edit' }}
+                            </button>
+                            <button @click="toggleComplete(task)" class="btn-success">
+                                {{ task.completed ? 'Undo' : 'Done' }}
+                            </button>
+                            <button @click="deleteTask(task)" class="btn-danger">Delete</button>
+                        </td>
+                        <td>
+                          <div class="progress-control">
+                              <input 
+                                  type="range" 
+                                  :value="task.progress" 
+                                  @input="e => updateProgress(task, parseInt(e.target.value))"
+                                  min="0" 
+                                  max="100" 
+                                  class="progress-slider"
+                              >
+                              <div class="progress-container">
+                                  <div 
+                                      :class="'progress-bar progress-' + task.priority"
+                                      :style="{ width: calculateProgress(task) + '%' }"
+                                  ></div>
+                              </div>
+                              {{ calculateProgress(task) }}%
+                          </div>
+                      </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+       const { createApp, ref, computed } = Vue;
+
+createApp({
+    setup() {
+        const tasks = ref([]);
+        const newTask = ref({
+            name: '',
+            startDate: '',
+            endDate: '',
+            priority: 'medium'
+        });
+
+        // Computed properties for statistics
+        const totalTasks = computed(() => tasks.value.length);
+        const completedTasks = computed(() => tasks.value.filter(t => t.completed).length);
+        const completionRate = computed(() => {
+            return totalTasks.value === 0 
+                ? 0 
+                : Math.round((completedTasks.value / totalTasks.value) * 100);
+        });
+        const urgentTasks = computed(() => 
+            tasks.value.filter(t => isUrgent(t) && !t.completed).length
+        );
+
+        const sortedTasks = computed(() => {
+            return [...tasks.value].sort((a, b) => {
+                // Completed tasks go to bottom
+                if (a.completed !== b.completed) {
+                    return a.completed ? 1 : -1;
+                }
+
+                // Sort by urgency
+                const aUrgent = isUrgent(a);
+                const bUrgent = isUrgent(b);
+                if (aUrgent !== bUrgent) {
+                    return bUrgent ? -1 : 1;
+                }
+
+                // Sort by priority
+                const priorityOrder = { high: 3, medium: 2, low: 1 };
+                if (a.priority !== b.priority) {
+                    return priorityOrder[b.priority] - priorityOrder[a.priority];
+                }
+
+                // Sort by remaining time
+                const aTime = new Date(a.endDate) - new Date();
+                const bTime = new Date(b.endDate) - new Date();
+                return aTime - bTime;
+            });
+        });
+
+        const addTask = () => {
+            const startDate = new Date(newTask.value.startDate);
+            const endDate = new Date(newTask.value.endDate);
+
+            if (endDate <= startDate) {
+                alert('End date must be after start date!');
+                return;
+            }
+
+            tasks.value.push({
+                id: Date.now(),
+                ...newTask.value,
+                progress: 0,  // Initialize progress
+                completed: false,
+                editing: false
+            });
+
+            // Reset form
+            newTask.value = {
+                name: '',
+                startDate: '',
+                endDate: '',
+                priority: 'medium'
+            };
+        };
+
+        const deleteTask = (task) => {
+            const index = tasks.value.indexOf(task);
+            tasks.value.splice(index, 1);
+        };
+
+        const toggleComplete = (task) => {
+            task.completed = !task.completed;
+            if (task.completed) {
+                task.progress = 100;
+                task.editing = false;
+            } else {
+                task.progress = task.progress || 0;
+            }
+        };
+
+        const toggleEdit = (task) => {
+            if (task.editing) {
+                updateTask(task);
+            } else {
+                task.originalName = task.name;
+                task.originalEndDate = task.endDate;
+                task.editing = true;
+            }
+        };
+
+        const updateTask = (task) => {
+            const startDate = new Date(task.startDate);
+            const endDate = new Date(task.endDate);
+
+            if (endDate <= startDate) {
+                alert('End date must be after start date!');
+                task.endDate = task.originalEndDate;
+                return;
+            }
+
+            task.editing = false;
+        };
+
+        const updateProgress = (task, newProgress) => {
+            task.progress = Math.min(100, Math.max(0, newProgress));
+            if (task.progress === 100) {
+                task.completed = true;
+            } else {
+                task.completed = false;
+            }
+        };
+
+        const formatDate = (dateString) => {
+            return new Date(dateString).toLocaleString();
+        };
+
+        const calculateRemainingTime = (task) => {
+            if (task.completed) return 'Completed';
+            
+            const now = new Date();
+            const end = new Date(task.endDate);
+            const diff = end - now;
+
+            if (diff < 0) return 'Overdue';
+
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+            if (days > 0) return `${days}d ${hours}h`;
+            if (hours > 0) return `${hours}h ${minutes}m`;
+            return `${minutes}m`;
+        };
+
+        const calculateProgress = (task) => {
+            return task.completed ? 100 : (task.progress || 0);
+        };
+
+        const isUrgent = (task) => {
+            if (task.completed) return false;
+
+            const now = new Date();
+            const end = new Date(task.endDate);
+            const timeLeft = end - now;
+            const totalDuration = end - new Date(task.startDate);
+
+            return timeLeft < 0 || 
+                   timeLeft < (totalDuration * 0.2) ||
+                   (task.priority === 'high' && timeLeft < 24 * 60 * 60 * 1000) ||
+                   (task.priority === 'medium' && timeLeft < 48 * 60 * 60 * 1000);
+        };
+
+        return {
+            tasks,
+            newTask,
+            totalTasks,
+            completedTasks,
+            completionRate,
+            urgentTasks,
+            sortedTasks,
+            addTask,
+            deleteTask,
+            toggleComplete,
+            toggleEdit,
+            updateTask,
+            updateProgress,
+            formatDate,
+            calculateRemainingTime,
+            calculateProgress,
+            isUrgent
+        };
+    }
+}).mount('#app');
+    </script>
+</body>
+</html>
