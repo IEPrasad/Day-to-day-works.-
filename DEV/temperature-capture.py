@@ -1,6 +1,12 @@
 import clr  # Ensure pythonnet is installed: pip install pythonnet
 import time
 from datetime import datetime, timedelta
+from pymongo import MongoClient
+
+# MongoDB setup
+client = MongoClient("mongodb://localhost:27017/")
+db = client["hardware_monitor"]  # Database name
+collection = db["cpu_temperatures"]  # Collection name
 
 # Path to OpenHardwareMonitorLib.dll
 dll_path = r"E:\openhardwaremonitor-v0.9.6\OpenHardwareMonitor\OpenHardwareMonitorLib.dll"
@@ -15,18 +21,34 @@ def get_cpu_temperature():
     handle.CPUEnabled = True  # Enable CPU sensors
     handle.Open()
 
-    temperatures = []
+    # Variables to store specific temperature readings
+    core1_temp = None
+    core2_temp = None
+    package_temp = None
+
+    # Iterate through hardware sensors to find the specific ones
     for i in range(len(handle.Hardware)):
         handle.Hardware[i].Update()
         for sensor in handle.Hardware[i].Sensors:
             if sensor.SensorType == Hardware.SensorType.Temperature:
-                temperatures.append((sensor.Name, sensor.Value))
+                if sensor.Name == "CPU Core #1":
+                    core1_temp = sensor.Value
+                elif sensor.Name == "CPU Core #2":
+                    core2_temp = sensor.Value
+                elif sensor.Name == "CPU Package":
+                    package_temp = sensor.Value
 
-    if temperatures:
-        for name, value in temperatures:
-            print(f"{name}: {value}°C")
-    else:
-        print("Could not read CPU temperature.")
+    # Prepare data dictionary with the specific core and package temperatures
+    data = {
+        "timestamp": datetime.now(),
+        "CPU Core #1": core1_temp,
+        "CPU Core #2": core2_temp,
+        "CPU Package": package_temp
+    }
+
+    # Insert data into MongoDB
+    collection.insert_one(data)
+    print("Data inserted into MongoDB:", data)
 
 # Run the function every minute
 while True:
@@ -39,9 +61,9 @@ while True:
     # Display the date and time information
     print(f"\n--- Processor Temperature Readings for {current_date} ({current_time} - {next_time}) ---")
     
-    # Get and display the CPU temperature
+    # Get and display the CPU temperature and save to MongoDB
     get_cpu_temperature()
     
     # Wait 1 minute before the next reading
     print("Waiting 1 minute before the next reading...")
-    time.sleep(60)  # Wait 60 seconds (1 minute)
+    time.sleep(10)  # Wait 10 seconds (1 minute)
