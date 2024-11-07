@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task & Time Manager</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+    <div id="app">
+        <div class="header">
+            <div class="date-time">
+                <h2>{{ currentDate }}</h2>
+                <h2>{{ currentTime }}</h2>
+            </div>
+            <div class="stats">
+                <div class="stat-box">
+                    <span>Target Hours</span>
+                    <h3>{{ targetHours }} hours</h3>
+                </div>
+                <div class="stat-box">
+                    <span>Total Tasks</span>
+                    <h3>{{ tasks.length }}</h3>
+                </div>
+                <div class="stat-box">
+                    <span>Worked Time</span>
+                    <h3>{{ totalWorkedTime }}</h3>
+                </div>
+                <div class="stat-box">
+                    <span>Break Time</span>
+                    <h3>{{ totalBreakTime }}</h3>
+                </div>
+                <div class="stat-box">
+                    <span>Completion Rate</span>
+                    <h3>{{ completionRate }}%</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+          <div class="time-tracker">
+            <div class="target-hours">
+                <label>Target Hours: </label>
+                <input type="number" 
+                       :value="targetHours" 
+                       @input="saveTargetHours($event.target.value)"
+                       min="1" 
+                       max="24">
+            </div>
+            <div class="hours-grid">
+              <div class="hour-slot" v-for="hour in hoursArray" :key="hour">
+                <span class="hour-label">{{ formatHour(hour) }}</span>
+                <div class="time-block" 
+                     :class="{ 'active': timeSlots[hour]?.isWorking }"
+                     :data-hour="hour"
+                     @mousedown="startDragging($event, hour)"
+                     :style="getSlotStyle(hour)">
+                    <div class="progress-bar" :style="getProgressStyle(hour)"></div>
+                    <input v-if="timeSlots[hour]?.isWorking"
+                           type="number"
+                           :value="timeSlots[hour]?.minutes"
+                           @input="updateTimeSlot(hour, $event.target.value)"
+                           class="minute-input"
+                           min="0"
+                           max="60">
+                    <input v-if="timeSlots[hour]?.isWorking"
+                           type="text"
+                           v-model="timeSlots[hour].notes"
+                           class="time-note"
+                           placeholder="Add note...">
+                </div>
+            </div>
+            </div>
+        </div>
+
+            <div class="tasks-section">
+                <div class="tasks-list">
+                    <div v-for="task in tasks" :key="task.id" class="task-item">
+                        <div class="task-info">
+                            <h4>{{ task.name }}</h4>
+                            <span :class="'priority-' + task.priority.toLowerCase()">
+                                {{ task.priority }}
+                            </span>
+                        </div>
+                        <div class="task-dates">
+                            <span>{{ formatDate(task.startDate) }} - {{ formatDate(task.endDate) }}</span>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-bar" @click="showProgressEdit(task)">
+                                <div class="progress" :style="{ width: task.progress + '%' }"></div>
+                            </div>
+                            <span>{{ task.progress }}%</span>
+                        </div>
+                        <div class="task-actions">
+                          <button @click="toggleTaskDone(task)">{{ task.isDone ? 'Undo' : 'Done' }}</button>
+                          <button @click="startEditTask(task)">Edit</button>
+                          <button @click="deleteTask(task)" class="delete">Delete</button>
+                      </div>
+                    </div>
+                </div>
+
+                <!-- Add/Edit Task Form -->
+                <div class="task-form" :class="{ 'edit-mode': editingTask }">
+                    <h3>{{ editingTask ? 'Edit Task' : 'Add New Task' }}</h3>
+                    <input v-model="newTask.name" type="text" placeholder="Task name">
+                    <input v-model="newTask.startDate" type="date">
+                    <input v-model="newTask.endDate" type="date">
+                    <select v-model="newTask.priority">
+                        <option value="Low">Low</option>
+                        <option value="Medium">Medium</option>
+                        <option value="High">High</option>
+                        <option value="Urgent">Urgent</option>
+                    </select>
+                    <div v-if="editingTask" class="progress-edit">
+                        <label>Progress:</label>
+                        <input type="range" v-model="newTask.progress" min="0" max="100">
+                        <span>{{ newTask.progress }}%</span>
+                    </div>
+                    <div class="form-actions">
+                        <button @click="saveTask">{{ editingTask ? 'Update' : 'Add' }} Task</button>
+                        <button v-if="editingTask" @click="cancelEdit" class="cancel">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Edit Modal -->
+        <div v-if="showProgressModal" class="modal">
+            <div class="modal-content">
+                <h3>Update Progress</h3>
+                <input type="range" v-model="tempProgress" min="0" max="100">
+                <span>{{ tempProgress }}%</span>
+                <div class="modal-actions">
+                    <button @click="saveProgress">Save</button>
+                    <button @click="closeProgressModal" class="cancel">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
